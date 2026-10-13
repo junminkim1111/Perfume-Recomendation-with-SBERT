@@ -84,6 +84,7 @@ class Perfume_Recommender:
     def recommend(self, target_idx = "random", n_recommendations=5):
         if target_idx == "random":
             target_idx = random.randint(0, len(self.dataset) - 1)
+        target_name = self.dataset.at[target_idx, "Perfume"]
         target = {"Top": self.dataset.at[target_idx, "Top"],
                   "Middle": self.dataset.at[target_idx, "Middle"],
                   "Base": self.dataset.at[target_idx, "Base"]}
@@ -98,11 +99,9 @@ class Perfume_Recommender:
             score = self.get_cosine_similarity(weighted_embeddings_original, weighted_embeddings_compare, self.layer_weights)
             sim_list[compare_name] = score
         top_similars = sorted(sim_list, key=lambda k: sim_list[k], reverse=True)[:n_recommendations]
-        return target, top_similars
+        return target_name, target, top_similars
     
-    def display_recommendations(self, target, top_similars, note_comparison=True):
-
-        target_name = self.dataset.loc[self.dataset['Perfume'].str.strip() == top_similars[0], 'Perfume'].item()
+    def display_recommendations(self, target_name, target, top_similars, note_comparison=True):
         print("***" * 10, "results", "***" * 10)
         print(f"Ignore IDF weight: ", "True" if all(v == 1.0 for v in self.IDF_weight.values()) else "False")
         print(f">>Original Perfume: {target_name}\n>>most similar perfume: {top_similars[0]}")
@@ -138,8 +137,8 @@ if __name__ == "__main__":
         IDF_weight = get_IDF_weights(dataset, data_size = len(dataset)),
         )
     
-    target, top_similars = recommender1.recommend(target_idx = random_num, n_recommendations=5)
-    recommender1.display_recommendations(target, top_similars)
+    target_name, target, top_similars = recommender1.recommend(target_idx = random_num, n_recommendations=5)
+    recommender1.display_recommendations(target_name, target, top_similars)
 
     # ignore_IDF = True
     recommender2 = Perfume_Recommender(
@@ -150,5 +149,5 @@ if __name__ == "__main__":
         ignore_IDF = True,
         IDF_weight = get_IDF_weights(dataset, data_size = len(dataset)),
         )
-    target, top_similars = recommender2.recommend(target_idx = random_num, n_recommendations=5)
-    recommender2.display_recommendations(target, top_similars)
+    target_name, target, top_similars = recommender2.recommend(target_idx = random_num, n_recommendations=5)
+    recommender2.display_recommendations(target_name, target, top_similars)
